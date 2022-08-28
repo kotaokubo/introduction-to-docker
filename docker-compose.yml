@@ -1,0 +1,32 @@
+version: '3'
+
+services:
+  nginx:
+    image: nginx:1.21.6
+    ports:
+      - "8000:80"
+    volumes:
+      - ./nginx/html:/usr/share/nginx/html
+      - ./nginx/conf.d:/etc/nginx/conf.d
+    depends_on:
+      - sinatra
+
+  sinatra:
+    build: ./sinatra
+    command: ruby myapp.rb -o 0.0.0.0
+    ports:
+      - "4567:4567"
+    volumes:
+      - ./sinatra:/opt/myapp
+    working_dir: /opt/myapp
+    depends_on:
+      - mysql
+
+  mysql:
+    image: mysql:8.0.29
+    platform: linux/x86_64
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+    volumes:
+      - ./mysql/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+      - ./mysql/conf.d/charset.cnf:/etc/mysql/conf.d/charset.cnf
